@@ -1,19 +1,17 @@
 name: trading-agent
-description: "Agente de trading 24/7 para IC Markets - Forex, Futuros, Acciones. Meta: $100 -> $1000"
-version: 2.3.0
-created: 2026-06-22
+description: "Agente de trading 24/7 para IC Markets — v7 con Adaptive Risk Manager, session filter, backtest-validado"
+version: 7.0.0
+created: 2026-06-23
 status: activo
 
 # Configuración del broker
 broker:
   plataforma: "hibrido"  # MT4 | cTrader | hibrido | simulado
-  # MT4 Demo
   mt4:
     cuenta: 12760229
     password: "tsqx65"
     servidor: "ICMarketsSC-Demo01"
     account_type: "demo"
-  # cTrader Demo
   ctrader:
     cuenta: 10073823
     password: "SN&2DU8xLXEfbW"
@@ -31,43 +29,65 @@ broker:
 bot:
   capital_inicial: 200.0
   capital_objetivo: 1000.0
-  timeframe_principal: "M5"
-  modo: "demo_real"  # demo_real (datos reales Yahoo Finance, sin ejecución real) | simulado | real
-  max_operaciones_dia: 10
+  timeframe_principal: "M15"
+  modo: "demo_real"  # demo_real | simulado | real
   max_riesgo_por_operacion: 0.02
-  max_drawdown_diario: 0.50
-  max_drawdown_total: 0.70
+  max_drawdown_diario: 0.10
+  max_drawdown_total: 0.30
   spread_max_pips: 1.5
-  slippage_pips: 1
 
-# Estrategias
+# Estrategias — solo las que pasaron el backtest
+# Basado en 30 días de datos reales Yahoo Finance (5m)
 estrategias:
-  - nombre: "scalping_rsi"
-    activa: true
-    timeframe: "M1"
-    params:
-      rsi_periodo: 14
-      rsi_sobrecompra: 70
-      rsi_sobreventa: 30
-      take_profit_pips: 10
-      stop_loss_pips: 5
   - nombre: "trend_following_ema"
     activa: true
     timeframe: "M15"
     params:
       ema_rapida: 9
       ema_lenta: 21
-      take_profit_pips: 30
+      take_profit_pips: 35
       stop_loss_pips: 15
       trailing_stop: true
+    pares:
+      - NZDUSD  # Backtest: +$55.35, WR 43.8%, PF 1.64
+
   - nombre: "breakout_bb"
     activa: true
     timeframe: "M15"
     params:
       bb_periodo: 20
       bb_desviacion: 2.0
-      take_profit_pips: 25
+      take_profit_pips: 30
       stop_loss_pips: 12
+    pares:
+      - EURUSD  # Backtest: +$62.51, WR 38.6%, PF 1.39
+      - GBPUSD  # Backtest: +$17.80, WR 33.3%, PF 1.07
+
+  - nombre: "scalping_rsi"
+    activa: false  # DESACTIVADO: WR < 35% en backtest, spreads te comen
+    timeframe: "M1"
+    params:
+      rsi_periodo: 14
+      rsi_sobrecompra: 70
+      rsi_sobreventa: 30
+      take_profit_pips: 15
+      stop_loss_pips: 8
+
+# Adaptive Risk Manager v7
+risk_manager_v7:
+  habilitado: true
+  base_risk_pct: 0.02
+  max_risk_pct: 0.04
+  min_risk_pct: 0.01
+  daily_max_loss_pct: 0.10  # 10% de capital = stop diario
+  daily_max_trades: 12
+  max_drawdown_hard_limit: 0.30
+  trading_sessions:
+    enabled: true
+    sessions:
+      - "london_ny_overlap"  # 1pm-4pm UTC — la mejor ventana
+      - "london"             # 7am-4pm UTC
+      - "new_york"           # 1pm-10pm UTC
 
 # Análisis técnico
 analisis_tecnico:
@@ -76,39 +96,24 @@ analisis_tecnico:
     - macd: {rapida: 12, lenta: 26, señal: 9}
     - bb: {periodo: 20, desviacion: 2.0}
     - ema: {periodos: [9, 21, 50, 200]}
-    - atr: {periodo: 14}
 
 # Dashboard
 dashboard:
   puerto: 8765
   host: "0.0.0.0"
   actualizacion_seg: 5
-  template: "dashboard.html"
 
 # Sistema de aprendizaje
 aprendizaje:
   habilitado: true
   historial_max: 1000
   mejora_estrategica: true
-  evaluar_cada: 50
+  evaluar_cada: 30
   ajustar_riesgo: true
 
-# Pares a operar
+# Símbolos — solo forex principales (índices y futuros necesitan sizing específico)
 simbolos:
   forex:
     - EURUSD
     - GBPUSD
-    - USDJPY
-    - AUDUSD
-    - USDCAD
     - NZDUSD
-  indices:
-    - US30
-    - NAS100
-    - SPX500
-    - GER40
-  futuros:
-    - XAUUSD
-    - XAGUSD
-    - UKOIL
-    - USOIL
