@@ -1,0 +1,114 @@
+name: trading-agent
+description: "Agente de trading 24/7 para IC Markets - Forex, Futuros, Acciones. Meta: $100 -> $1000"
+version: 2.3.0
+created: 2026-06-22
+status: activo
+
+# Configuración del broker
+broker:
+  plataforma: "hibrido"  # MT4 | cTrader | hibrido | simulado
+  # MT4 Demo
+  mt4:
+    cuenta: 12760229
+    password: "tsqx65"
+    servidor: "ICMarketsSC-Demo01"
+    account_type: "demo"
+  # cTrader Demo
+  ctrader:
+    cuenta: 10073823
+    password: "SN&2DU8xLXEfbW"
+    servidor: "cTrader demo"
+    account_type: "demo"
+    client_id: "31436_UjIt8hliXMd5QJ4reBWbmGhUhulT77bkF4rnGwDL5krd9gvKsn"
+    client_secret: "uYs4md1bzEcLJh94AbQtJCjh59xbK9lGKzryCpKX1tOJ7ZiLjz"
+    app_status: "submitted"
+  leverage: 500
+  comisiones:
+    tipo: "raw_pricing"
+    comision_por_lote_redondo: 3.5
+
+# Configuración del bot
+bot:
+  capital_inicial: 200.0
+  capital_objetivo: 1000.0
+  timeframe_principal: "M5"
+  modo: "demo_real"  # demo_real (datos reales Yahoo Finance, sin ejecución real) | simulado | real
+  max_operaciones_dia: 10
+  max_riesgo_por_operacion: 0.02
+  max_drawdown_diario: 0.50
+  max_drawdown_total: 0.70
+  spread_max_pips: 1.5
+  slippage_pips: 1
+
+# Estrategias
+estrategias:
+  - nombre: "scalping_rsi"
+    activa: true
+    timeframe: "M1"
+    params:
+      rsi_periodo: 14
+      rsi_sobrecompra: 70
+      rsi_sobreventa: 30
+      take_profit_pips: 10
+      stop_loss_pips: 5
+  - nombre: "trend_following_ema"
+    activa: true
+    timeframe: "M15"
+    params:
+      ema_rapida: 9
+      ema_lenta: 21
+      take_profit_pips: 30
+      stop_loss_pips: 15
+      trailing_stop: true
+  - nombre: "breakout_bb"
+    activa: true
+    timeframe: "M15"
+    params:
+      bb_periodo: 20
+      bb_desviacion: 2.0
+      take_profit_pips: 25
+      stop_loss_pips: 12
+
+# Análisis técnico
+analisis_tecnico:
+  indicadores:
+    - rsi: {periodo: 14, sobrecompra: 70, sobreventa: 30}
+    - macd: {rapida: 12, lenta: 26, señal: 9}
+    - bb: {periodo: 20, desviacion: 2.0}
+    - ema: {periodos: [9, 21, 50, 200]}
+    - atr: {periodo: 14}
+
+# Dashboard
+dashboard:
+  puerto: 8765
+  host: "0.0.0.0"
+  actualizacion_seg: 5
+  template: "dashboard.html"
+
+# Sistema de aprendizaje
+aprendizaje:
+  habilitado: true
+  historial_max: 1000
+  mejora_estrategica: true
+  evaluar_cada: 50
+  ajustar_riesgo: true
+
+# Pares a operar
+simbolos:
+  forex:
+    - EURUSD
+    - GBPUSD
+    - USDJPY
+    - AUDUSD
+    - USDCAD
+    - NZDUSD
+  indices:
+    - US30
+    - NAS100
+    - SPX500
+    - GER40
+  futuros:
+    - XAUUSD
+    - XAGUSD
+    - UKOIL
+    - USOIL

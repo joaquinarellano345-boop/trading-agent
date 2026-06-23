@@ -1,0 +1,16 @@
+__pycache__/
+*.pyc
+*.pyo
+.env
+state.json
+.ctrader_tokens.json
+logs/
+metrics/
+reports/
+memory/
+templates/
+static/
+*.egg-info/
+dist/
+build/
+.DS_Store
